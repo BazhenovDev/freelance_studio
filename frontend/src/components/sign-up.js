@@ -1,5 +1,5 @@
-export class Dashboard {
+export class SignUp {
     constructor() {
-        console.log('DASHBOARD');
+        console.log('SIGN-UP');
     }
 }
