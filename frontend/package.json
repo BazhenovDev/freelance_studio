@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "q",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -20,5 +20,8 @@
     "webpack": "^5.89.0",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "^5.2.0"
+  },
+  "dependencies": {
+    "admin-lte": "3.2"
   }
 }
