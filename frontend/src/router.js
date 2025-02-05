@@ -6,12 +6,14 @@ export class Router {
     constructor() {
         this.titlePageElement = document.getElementById('title');
         this.contentPageElement = document.getElementById('content');
+        this.currentYear = new Date().getFullYear();
         this.initEvents();
         this.routes = [
             {
                 route: '/',
                 title: 'Дашборд',
                 filePathTemplate: '/templates/dashboard.html',
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new Dashboard();
                 },
@@ -20,11 +22,13 @@ export class Router {
                 route: '/404',
                 title: 'Страница не найдена',
                 filePathTemplate: '/templates/404.html',
+                useLayout: false,
             },
             {
                 route: '/login',
                 title: 'Авторизация',
                 filePathTemplate: '/templates/login.html',
+                useLayout: false,
                 load: () => {
                     new Login();
                 },
@@ -33,6 +37,7 @@ export class Router {
                 route: '/sign-up',
                 title: 'Регистрация',
                 filePathTemplate: '/templates/sign-up.html',
+                useLayout: false,
                 load: () => {
                     new SignUp();
                 },
@@ -48,14 +53,24 @@ export class Router {
     async activateRoute() {
         const urlRoute = window.location.pathname;
         const newRoute = this.routes.find(item => item.route === urlRoute);
+
         if (newRoute) {
             if (newRoute.title) {
                 this.titlePageElement.innerText = `${newRoute.title} | Freelance Studio`;
             }
 
             if (newRoute.filePathTemplate) {
-                this.contentPageElement.innerHTML = await fetch(newRoute.filePathTemplate)
-                    .then(response => response.text());
+                let contentBlock = this.contentPageElement
+                if (newRoute.useLayout) {
+                    this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
+                    contentBlock = document.getElementById('content-layout');
+                    let footerYear = document.getElementById('current-year');
+                    footerYear.innerText = this.currentYear.toString();
+                    document.body.classList.add('sidebar-mini', 'layout-fixed');
+                } else {
+                    document.body.classList.remove('sidebar-mini', 'layout-fixed');
+                }
+                contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
             }
 
             if (newRoute.load && typeof newRoute.load === 'function') {
@@ -67,5 +82,4 @@ export class Router {
             window.location = '/404';
         }
     }
-
 }
