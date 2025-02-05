@@ -6,7 +6,10 @@ export class Router {
     constructor() {
         this.titlePageElement = document.getElementById('title');
         this.contentPageElement = document.getElementById('content');
+        this.adminLteStyleElement = document.getElementById('adminlte_style');
+
         this.currentYear = new Date().getFullYear();
+
         this.initEvents();
         this.routes = [
             {
@@ -30,8 +33,11 @@ export class Router {
                 filePathTemplate: '/templates/login.html',
                 useLayout: false,
                 load: () => {
+                    document.body.classList.add('login-page');
+                    document.body.style.height = '100vh';
                     new Login();
                 },
+                styles: ['icheck-bootstrap.min.css'],
             },
             {
                 route: '/sign-up',
@@ -39,8 +45,11 @@ export class Router {
                 filePathTemplate: '/templates/sign-up.html',
                 useLayout: false,
                 load: () => {
+                    document.body.classList.add('register-page');
+                    document.body.style.height = '100vh';
                     new SignUp();
                 },
+                styles: ['icheck-bootstrap.min.css'],
             },
         ];
     }
@@ -55,12 +64,22 @@ export class Router {
         const newRoute = this.routes.find(item => item.route === urlRoute);
 
         if (newRoute) {
+            if(newRoute.styles && newRoute.styles.length > 0) {
+                newRoute.styles.forEach(style => {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = `/css/${style}`;
+                    document.head.insertBefore(link, this.adminLteStyleElement);
+                })
+            }
+
             if (newRoute.title) {
                 this.titlePageElement.innerText = `${newRoute.title} | Freelance Studio`;
             }
 
             if (newRoute.filePathTemplate) {
-                let contentBlock = this.contentPageElement
+                document.body.className = '';
+                let contentBlock = this.contentPageElement;
                 if (newRoute.useLayout) {
                     this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
                     contentBlock = document.getElementById('content-layout');
