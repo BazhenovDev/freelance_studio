@@ -4,8 +4,13 @@ export class Login {
     passwordElement = null;
     rememberMeElement = null;
     commonErrorElement = null;
+
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
+
+        if(localStorage.getItem('accessToken')) {
+            return this.openNewRoute('/');
+        }
 
         this.emailElement = document.getElementById('email');
         this.passwordElement = document.getElementById('password');
@@ -68,10 +73,7 @@ export class Login {
                 name: result.name
             }));
 
-           this.openNewRoute('/');
-
-        } else {
-
+            this.openNewRoute('/');
         }
     }
 }
