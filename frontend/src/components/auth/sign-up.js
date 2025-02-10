@@ -1,5 +1,5 @@
-import {AuthUtils} from "../utils/auth-utils.js";
-import {HttpUtils} from "../utils/http-utils.js";
+import {AuthUtils} from "../../utils/auth-utils.js";
+import {HttpUtils} from "../../utils/http-utils.js";
 
 export class SignUp {
     emailElement = null;
@@ -10,7 +10,7 @@ export class SignUp {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
 
-        if(AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
+        if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/');
         }
 
@@ -87,14 +87,14 @@ export class SignUp {
 
         //Проверяем, если флаг в функции validateForm true, то отправляем форму на сервер, если false, то ничего не делаем
         if (this.validateForm()) {
-            const result = await HttpUtils.request('/signup', 'POST', {
+            const result = await HttpUtils.request('/signup', 'POST', false, {
                 name: this.nameElement.value,
                 lastName: this.lastNameElement.value,
                 email: this.emailElement.value,
                 password: this.passwordElement.value
             });
 
-            if (result.error || !result.response || (result.response && (!result.response.accessToken ||  !result.response.refreshToken || !result.response.id || !result.response.name))) {
+            if (result.error || !result.response || (result.response && (!result.response.accessToken || !result.response.refreshToken || !result.response.id || !result.response.name))) {
                 if (result.response.message) {
                     this.commonErrorElement.innerText = result.response.message;
                 }
@@ -102,7 +102,10 @@ export class SignUp {
                 return;
             }
 
-            AuthUtils.setAuthInfo(result.response.accessToken, result.response.refreshToken, {id: result.response.id, name: result.response.name});
+            AuthUtils.setAuthInfo(result.response.accessToken, result.response.refreshToken, {
+                id: result.response.id,
+                name: result.response.name
+            });
 
             this.openNewRoute('/');
         }

@@ -1,5 +1,5 @@
-import {AuthUtils} from "../utils/auth-utils.js";
-import {HttpUtils} from "../utils/http-utils.js";
+import {AuthUtils} from "../../utils/auth-utils.js";
+import {HttpUtils} from "../../utils/http-utils.js";
 
 export class LogOut {
     constructor(openNewRoute) {
@@ -16,7 +16,7 @@ export class LogOut {
 
     async logout() {
         //Отправляем запрос на бэкенд, чтобы разлогинить
-        const result = await HttpUtils.request('/logout', 'POST', {
+        const result = await HttpUtils.request('/logout', 'POST', false,{
             refreshToken: AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey)
         });
         console.log(result.response.message);
