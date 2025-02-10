@@ -1,9 +1,12 @@
+import {AuthUtils} from "../utils/auth-utils.js";
+import {HttpUtils} from "../utils/http-utils.js";
+
 export class LogOut {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
 
         //Проверяем есть ли какие-либо токены в локальном хранилище
-        if (!localStorage.getItem('accessToken') || !localStorage.getItem('refreshToken')) {
+        if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey) || !AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey)) {
             //Если токенов нет, переводим пользователя на страницу login
             return this.openNewRoute('/login');
         }
@@ -13,23 +16,13 @@ export class LogOut {
 
     async logout() {
         //Отправляем запрос на бэкенд, чтобы разлогинить
-        const response = await fetch('http://localhost:3000/api/logout', {
-            method: 'POST',
-            headers: {
-                'Content-type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                refreshToken: localStorage.getItem('refreshToken')
-            })
+        const result = await HttpUtils.request('/logout', 'POST', {
+            refreshToken: AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey)
         });
-        const result = await response.json();
-        console.log(result.message)
+        console.log(result.response.message);
 
         //Удаляем данные из локального хранилища
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userInfo');
+        AuthUtils.removeAuthInfo()
 
         //Перевродим на страницу логина
         this.openNewRoute('/login');

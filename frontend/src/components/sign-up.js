@@ -1,13 +1,16 @@
+import {AuthUtils} from "../utils/auth-utils.js";
+import {HttpUtils} from "../utils/http-utils.js";
+
 export class SignUp {
     emailElement = null;
     passwordElement = null;
-    rememberMeElement = null;
+    agreeElement = null;
     commonErrorElement = null;
 
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
 
-        if(localStorage.getItem('accessToken')) {
+        if(AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/');
         }
 
@@ -84,37 +87,22 @@ export class SignUp {
 
         //Проверяем, если флаг в функции validateForm true, то отправляем форму на сервер, если false, то ничего не делаем
         if (this.validateForm()) {
-            const response = await fetch('http://localhost:3000/api/signup', {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: this.nameElement.value,
-                    lastName: this.lastNameElement.value,
-                    email: this.emailElement.value,
-                    password: this.passwordElement.value
-                })
+            const result = await HttpUtils.request('/signup', 'POST', {
+                name: this.nameElement.value,
+                lastName: this.lastNameElement.value,
+                email: this.emailElement.value,
+                password: this.passwordElement.value
             });
 
-            const result = await response.json();
-
-            if (result.error || !result.accessToken || !result.refreshToken || !result.id || !result.name) {
-                if (result.message) {
-                    this.commonErrorElement.innerText = result.message;
+            if (result.error || !result.response || (result.response && (!result.response.accessToken ||  !result.response.refreshToken || !result.response.id || !result.response.name))) {
+                if (result.response.message) {
+                    this.commonErrorElement.innerText = result.response.message;
                 }
                 this.commonErrorElement.style.display = 'block';
                 return;
             }
 
-            localStorage.setItem('accessToken', result.accessToken);
-            localStorage.setItem('refreshToken', result.refreshToken);
-            localStorage.setItem('refreshToken', result.refreshToken);
-            localStorage.setItem('userInfo', JSON.stringify({
-                id: result.id,
-                name: result.name
-            }));
+            AuthUtils.setAuthInfo(result.response.accessToken, result.response.refreshToken, {id: result.response.id, name: result.response.name});
 
             this.openNewRoute('/');
         }
