@@ -134,7 +134,7 @@ export class Router {
             const currentRoute = window.location.pathname;
             // Если в url ничего нет, или текущий currentRoute строго равен url без # (т.к. мы её удаляем с помощью метода replace
             // Или он начинается строго с javascript:void(0), то прерываем функцию с помощью return
-            if (!url || (currentRoute === url.replace('#', '')) || url.startsWith('javascript:void(0)')) {
+            if (!url || (currentRoute === url.replace('#', '')) || url === '/#' || url.startsWith('javascript:void(0)')) {
                 return;
             }
             // Иначе вызываем openNewRoute и передаём туда содержание переменной url
