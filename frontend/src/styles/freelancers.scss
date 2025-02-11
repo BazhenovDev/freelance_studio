@@ -1,0 +1,13 @@
+.freelancer {
+  &-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+  }
+  &-tools {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+  }
+}
