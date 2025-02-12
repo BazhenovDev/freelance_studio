@@ -1,4 +1,4 @@
-.freelancer {
+.freelancers {
   &-avatar {
     width: 40px;
     height: 40px;
@@ -9,5 +9,14 @@
     justify-content: space-between;
     align-items: center;
     gap: 5px;
+  }
+
+}
+
+.freelancer {
+  .box-profile {
+    .level {
+      font-size: 32px;
+    }
   }
 }

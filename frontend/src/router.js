@@ -4,6 +4,7 @@ import {SignUp} from "./components/auth/sign-up.js";
 import {LogOut} from "./components/auth/logout.js";
 import {FreelancersList} from "./components/freelancers/freelancers-list.js";
 import {FileUtils} from "./utils/file-utils.js";
+import {FreelancersView} from "./components/freelancers/freelancers-view.js";
 
 export class Router {
     constructor() {
@@ -87,6 +88,15 @@ export class Router {
                 },
                 styles: ['dataTables.bootstrap4.min.css'],
                 scripts: ['jquery.dataTables.min.js', 'dataTables.bootstrap4.min.js']
+            },
+            {
+                route: '/freelancers/view',
+                title: 'Создать фрилансера',
+                filePathTemplate: '/templates/pages/freelancers/view.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new FreelancersView(this.openNewRoute.bind(this));
+                },
             },
         ];
     }
