@@ -5,6 +5,7 @@ import {LogOut} from "./components/auth/logout.js";
 import {FreelancersList} from "./components/freelancers/freelancers-list.js";
 import {FileUtils} from "./utils/file-utils.js";
 import {FreelancersView} from "./components/freelancers/freelancers-view.js";
+import {FreelancerCreate} from "./components/freelancers/freelancer-create.js";
 
 export class Router {
     constructor() {
@@ -91,12 +92,22 @@ export class Router {
             },
             {
                 route: '/freelancers/view',
-                title: 'Создать фрилансера',
+                title: `Фрилансер`,
                 filePathTemplate: '/templates/pages/freelancers/view.html',
                 useLayout: '/templates/layout.html',
                 load: () => {
                     new FreelancersView(this.openNewRoute.bind(this));
                 },
+            },
+            {
+                route: '/freelancers/create',
+                title: 'Создание нового фрилансера',
+                filePathTemplate: '/templates/pages/freelancers/create.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new FreelancerCreate(this.openNewRoute.bind(this));
+                },
+                scripts: ['bs-custom-file-input.min.js']
             },
         ];
     }
@@ -163,81 +174,81 @@ export class Router {
                     document.querySelector(`link[href='/css/${style}']`).remove();
                 })
             }
-                // Если есть массив скриптов, то проходимся по нему и удаляем их со страницы
-                if (currentRoute.scripts && currentRoute.scripts.length > 0) {
-                    currentRoute.scripts.forEach(script => {
-                        document.querySelector(`script[src='/js/${script}']`).remove();
-                    })
-                }
-                // Если есть метод unload и проверяем, что это функция, то активируем её
-                if (currentRoute.unload && typeof currentRoute.unload === 'function') {
-                    currentRoute.unload();
-                }
+            // Если есть массив скриптов, то проходимся по нему и удаляем их со страницы
+            if (currentRoute.scripts && currentRoute.scripts.length > 0) {
+                currentRoute.scripts.forEach(script => {
+                    document.querySelector(`script[src='/js/${script}']`).remove();
+                })
             }
-
-            // Тут берём уже текущий pathname в url
-            const urlRoute = window.location.pathname;
-            // Проходимся по массиву роутов и в newRoute записываем текущий роут
-            const newRoute = this.routes.find(item => item.route === urlRoute);
-
-
-            if (newRoute) {
-                // Если в newRoute что-то есть, проверяем, есть ли массив стилей
-                if (newRoute.styles && newRoute.styles.length > 0) {
-                    // Если есть массив стилей, то проходимся по нему
-                    newRoute.styles.forEach(style => {
-                        // С помощью утилиты loadPageStyle подгружаем стили
-                        FileUtils.loadPageStyle(`/css/${style}`, this.adminLteStyleElement)
-                    })
-                }
-                // Проверяем есть ли массив скриптов
-                if (newRoute.scripts && newRoute.scripts.length > 0) {
-                    // Если есть массив скриптов, то проходимся по нему
-                    for (const script of newRoute.scripts) {
-                        // С помощью текущего промиса последовательно загружаем скрипты
-                        await FileUtils.loadPageScript(`/js/${script}`);
-                    }
-                }
-
-                // Если у роута есть title в объекте, то подставляем его ниже в условии
-                if (newRoute.title) {
-                    this.titlePageElement.innerText = `${newRoute.title} | Freelance Studio`;
-                }
-
-                // Проверяем есть ли что-то в filePathTemplate
-                if (newRoute.filePathTemplate) {
-                    // в переменную contentBlock сохраняем элемент, который хранится в this.contentPageElement
-                    let contentBlock = this.contentPageElement;
-                    // Проверяем есть ли свойство useLayout в объекте newRoute
-                    if (newRoute.useLayout) {
-                        // Если есть useLayout, то с помощью fetch асинхронно вставляем его в contentBlock
-                        this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
-                        // Тут переопределяем переменную contentBlock и присваиваем ей элемент с id content-layout
-                        contentBlock = document.getElementById('content-layout');
-                        // Находим дату в футоре
-                        let footerYear = document.getElementById('current-year');
-                        // Вставляем текущий год
-                        footerYear.innerText = this.currentYear.toString();
-                        // Добавляем для body определённые классы, которые необходимо подтянуть из adminLTE для нашего лайаута
-                        document.body.classList.add('sidebar-mini', 'layout-fixed');
-                    } else {
-                        // Если useLayout в newRoute нет, то удаляем лишние классы, которые необходимы только для лайаута
-                        document.body.classList.remove('sidebar-mini', 'layout-fixed');
-                    }
-                    // Асинхронно вставляем страничку из filePathTemplate в переопределённую переменную contentBlock, в которой хранится 'content-layout'
-                    contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
-                }
-
-                // Проверяем есть ли в newRoute метод load, если да и это функция, то вызываем его
-                if (newRoute.load && typeof newRoute.load === 'function') {
-                    newRoute.load();
-                }
-
-                // Если newRoute не существует, то отправляем пользователя на страницу 404
-            } else {
-                console.log('No route found');
-                history.pushState({}, '', '/404');
-                await this.activateRoute();
+            // Если есть метод unload и проверяем, что это функция, то активируем её
+            if (currentRoute.unload && typeof currentRoute.unload === 'function') {
+                currentRoute.unload();
             }
         }
+
+        // Тут берём уже текущий pathname в url
+        const urlRoute = window.location.pathname;
+        // Проходимся по массиву роутов и в newRoute записываем текущий роут
+        const newRoute = this.routes.find(item => item.route === urlRoute);
+
+
+        if (newRoute) {
+            // Если в newRoute что-то есть, проверяем, есть ли массив стилей
+            if (newRoute.styles && newRoute.styles.length > 0) {
+                // Если есть массив стилей, то проходимся по нему
+                newRoute.styles.forEach(style => {
+                    // С помощью утилиты loadPageStyle подгружаем стили
+                    FileUtils.loadPageStyle(`/css/${style}`, this.adminLteStyleElement)
+                })
+            }
+            // Проверяем есть ли массив скриптов
+            if (newRoute.scripts && newRoute.scripts.length > 0) {
+                // Если есть массив скриптов, то проходимся по нему
+                for (const script of newRoute.scripts) {
+                    // С помощью текущего промиса последовательно загружаем скрипты
+                    await FileUtils.loadPageScript(`/js/${script}`);
+                }
+            }
+
+            // Если у роута есть title в объекте, то подставляем его ниже в условии
+            if (newRoute.title) {
+                this.titlePageElement.innerText = `${newRoute.title} | Freelance Studio`;
+            }
+
+            // Проверяем есть ли что-то в filePathTemplate
+            if (newRoute.filePathTemplate) {
+                // в переменную contentBlock сохраняем элемент, который хранится в this.contentPageElement
+                let contentBlock = this.contentPageElement;
+                // Проверяем есть ли свойство useLayout в объекте newRoute
+                if (newRoute.useLayout) {
+                    // Если есть useLayout, то с помощью fetch асинхронно вставляем его в contentBlock
+                    this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
+                    // Тут переопределяем переменную contentBlock и присваиваем ей элемент с id content-layout
+                    contentBlock = document.getElementById('content-layout');
+                    // Находим дату в футоре
+                    let footerYear = document.getElementById('current-year');
+                    // Вставляем текущий год
+                    footerYear.innerText = this.currentYear.toString();
+                    // Добавляем для body определённые классы, которые необходимо подтянуть из adminLTE для нашего лайаута
+                    document.body.classList.add('sidebar-mini', 'layout-fixed');
+                } else {
+                    // Если useLayout в newRoute нет, то удаляем лишние классы, которые необходимы только для лайаута
+                    document.body.classList.remove('sidebar-mini', 'layout-fixed');
+                }
+                // Асинхронно вставляем страничку из filePathTemplate в переопределённую переменную contentBlock, в которой хранится 'content-layout'
+                contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
+            }
+
+            // Проверяем есть ли в newRoute метод load, если да и это функция, то вызываем его
+            if (newRoute.load && typeof newRoute.load === 'function') {
+                newRoute.load();
+            }
+
+            // Если newRoute не существует, то отправляем пользователя на страницу 404
+        } else {
+            console.log('No route found');
+            history.pushState({}, '', '/404');
+            await this.activateRoute();
+        }
     }
+}

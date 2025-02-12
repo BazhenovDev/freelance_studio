@@ -3,7 +3,10 @@ import config from "../../config/config.js";
 import {CommonUtils} from "../../utils/common-utils.js";
 
 export class FreelancersView {
+
+    pageTitle = null;
     constructor(openNewRoute) {
+        this.pageTitle = document.getElementById('title')
         this.openNewRoute = openNewRoute
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
@@ -46,6 +49,10 @@ export class FreelancersView {
            let date = new Date(freelancer.createdAt);
             document.getElementById('created').innerText = date.toLocaleString('ru-RU');
         }
+
+        const titlePage = this.pageTitle.innerText.split(' ');
+        titlePage.splice(1, 0, freelancer.name, freelancer.lastName);
+        this.pageTitle.innerText = titlePage.join(' ');
     }
 
 }
