@@ -1,6 +1,5 @@
 import {HttpUtils} from "../../utils/http-utils.js";
-import config from "../../config/config.js";
-import {FileUtils} from "../../utils/file-utils";
+import {FileUtils} from "../../utils/file-utils.js";
 
 export class FreelancerCreate {
     constructor(openNewRoute) {

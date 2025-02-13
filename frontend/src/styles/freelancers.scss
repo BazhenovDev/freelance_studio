@@ -19,4 +19,22 @@
       font-size: 32px;
     }
   }
+  .img-object-fit {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+  }
 }
+
+.freelancer-edit {
+  .box-profile {
+    .level {
+      font-size: 32px;
+    }
+  }
+}
+
+#infoInput {
+  min-height: 40px;
+}
+
