@@ -6,7 +6,9 @@ export class FreelancersView {
 
     pageTitle = null;
     constructor(openNewRoute) {
-        this.pageTitle = document.getElementById('title')
+        this.pageTitle = document.getElementById('title');
+        this.createDateElement = document.getElementById('created');
+        this.updateDateElement = document.getElementById('update');
         this.openNewRoute = openNewRoute
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
@@ -46,8 +48,15 @@ export class FreelancersView {
         document.getElementById('skills').innerText = freelancer.skills;
         document.getElementById('info').innerText = freelancer.info;
         if (freelancer.createdAt) {
-           let date = new Date(freelancer.createdAt);
-            document.getElementById('created').innerText = date.toLocaleString('ru-RU');
+           let dateCreate = new Date(freelancer.createdAt);
+            this.createDateElement.innerText = dateCreate.toLocaleString('ru-RU');
+        }
+
+        if (!freelancer.updatedAt || (freelancer.createdAt === freelancer.updatedAt)) {
+            this.updateDateElement.previousElementSibling.style.display ='none';
+        } else {
+            let dateCreate = new Date(freelancer.updatedAt);
+            this.updateDateElement.innerText = dateCreate.toLocaleString('ru-RU');
         }
 
         const titlePage = this.pageTitle.innerText.split(' ');
