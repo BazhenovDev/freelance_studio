@@ -1,6 +1,6 @@
-import {HttpUtils} from "../../utils/http-utils";
-import config from "../../config/config";
-import {CommonUtils} from "../../utils/common-utils";
+import {HttpUtils} from "../../utils/http-utils.js";
+import config from "../../config/config.js";
+import {CommonUtils} from "../../utils/common-utils.js";
 
 export class OrdersView {
     constructor(openNewRoute) {

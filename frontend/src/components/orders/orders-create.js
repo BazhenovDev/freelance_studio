@@ -1,5 +1,4 @@
 import {HttpUtils} from "../../utils/http-utils";
-import {FileUtils} from "../../utils/file-utils";
 
 export class OrdersCreate {
     constructor(openNewRoute) {
@@ -15,11 +14,11 @@ export class OrdersCreate {
 
         this.getFreelancers().then();
 
-        const calendarScheduled = $('#calendar-scheduled');
-
         this.scheduledDate = null;
         this.deadlineDate = null;
         this.completeDate =null;
+
+        const calendarScheduled = $('#calendar-scheduled');
         calendarScheduled.datetimepicker({
             inline: true,
             locale: 'ru',
@@ -71,7 +70,7 @@ export class OrdersCreate {
         const result = await HttpUtils.request('/freelancers');
 
         if (result.redirect) {
-            this.openNewRoute(result.redirect);
+            return this.openNewRoute(result.redirect);
         }
 
         if (result.error || !result.response || (result.response.error && !result.response.freelancers)) {
@@ -152,8 +151,6 @@ export class OrdersCreate {
             }
 
             return this.openNewRoute(`/orders/view?id=${result.response.id}`);
-
         }
     }
-
 }
