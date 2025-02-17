@@ -8,3 +8,18 @@
     }
   }
 }
+
+.order-create {
+  .bootstrap-datetimepicker-widget {
+    .picker-switch {
+      a {
+        color: white;
+      }
+    }
+    .timepicker {
+      a span {
+        color: white;
+      }
+    }
+  }
+}
