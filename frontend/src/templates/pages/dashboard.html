@@ -1,6 +1,58 @@
-DASHBOARD
+<div class="dashboard">
 
-<a href="/">Dashboard</a>
-<a href="/login">Login</a>
-<a href="/sign-up">Sign Up</a>
-<a href="/404">404</a>
+	<div class="content-header">
+		<h1 class="m-0">Дашборд</h1>
+	</div>
+
+	<section class="content">
+		<div class="row">
+			<div class="col-lg-3 col-6">
+
+				<div class="small-box bg-info">
+					<div class="inner">
+						<h3 id="count-orders"></h3>
+						<p>Всего заказов</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-lg-3 col-6">
+
+				<div class="small-box bg-success">
+					<div class="inner">
+						<h3 id="done-orders"></h3>
+						<p>Завершено</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-lg-3 col-6">
+
+				<div class="small-box bg-warning">
+					<div class="inner">
+						<h3 id="in-progress-orders"></h3>
+						<p>В процессе</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-lg-3 col-6">
+
+				<div class="small-box bg-danger">
+					<div class="inner">
+						<h3 id="canceled-orders"></h3>
+						<p>Отменено</p>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<h3 class="mb-2">Календарь заказов</h3>
+
+		<div class="card card-primary">
+			<div class="card-body p-0">
+				<div id="calendar"></div>
+			</div>
+		</div>
+	</section>
+</div>

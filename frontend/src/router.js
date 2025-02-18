@@ -36,8 +36,17 @@ export class Router {
                 useLayout: '/templates/layout.html',
                 // Метод load
                 load: () => {
-                    new Dashboard();
+                    new Dashboard(this.openNewRoute.bind(this));
                 },
+                scripts: [
+                    'moment.min.js',
+                    'moment-ru-locale.js',
+                    'fullcalendar.js',
+                    'fullcalendar-locale-ru.js'
+                ],
+                styles: [
+                    'fullcalendar.css'
+                ]
             },
             {
                 route: '/404',
@@ -320,6 +329,7 @@ export class Router {
                     footerYear.innerText = this.currentYear.toString();
                     // Добавляем для body определённые классы, которые необходимо подтянуть из adminLTE для нашего лайаута
                     document.body.classList.add('sidebar-mini', 'layout-fixed');
+                    this.activateMenuItem(newRoute)
                 } else {
                     // Если useLayout в newRoute нет, то удаляем лишние классы, которые необходимы только для лайаута
                     document.body.classList.remove('sidebar-mini', 'layout-fixed');
@@ -339,5 +349,16 @@ export class Router {
             history.pushState({}, '', '/404');
             await this.activateRoute();
         }
+    }
+
+    activateMenuItem(route) {
+        document.querySelectorAll('.sidebar .nav-link').forEach(item => {
+           const href = item.getAttribute('href');
+           if ((route.route.includes(href) && href !== '/') || (route.route === '/' && href === '/')) {
+               item.classList.add('active');
+           } else {
+               item.classList.remove('active');
+           }
+        })
     }
 }
