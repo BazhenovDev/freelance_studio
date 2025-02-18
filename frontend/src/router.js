@@ -13,12 +13,14 @@ import {OrdersView} from "./components/orders/orders-view.js";
 import {OrdersCreate} from "./components/orders/orders-create.js";
 import {OrdersEdit} from "./components/orders/orders-edit.js";
 import {OrdersDelete} from "./components/orders/orders-delete.js";
+import {AuthUtils} from "./utils/auth-utils";
 
 export class Router {
     constructor() {
         this.titlePageElement = document.getElementById('title');
         this.contentPageElement = document.getElementById('content');
         this.adminLteStyleElement = document.getElementById('adminlte_style');
+        this.userName = null;
 
         this.currentYear = new Date().getFullYear();
 
@@ -329,6 +331,22 @@ export class Router {
                     footerYear.innerText = this.currentYear.toString();
                     // Добавляем для body определённые классы, которые необходимо подтянуть из adminLTE для нашего лайаута
                     document.body.classList.add('sidebar-mini', 'layout-fixed');
+
+                    //Добавление ФИО пользователя в лайаут
+                    this.profileNameElement = document.getElementById('profile-name');
+                    if (!this.userName) {
+                        let userInfo = AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey);
+                        if (userInfo) {
+                            userInfo = JSON.parse(userInfo)
+                            if (userInfo && userInfo.name) {
+                                this.userName = userInfo.name
+                            }
+                        }
+                    }
+                    this.profileNameElement.innerText = this.userName;
+
+
+                    // Делает ссылку страницы активной, на которой находится пользователь в лайауте
                     this.activateMenuItem(newRoute)
                 } else {
                     // Если useLayout в newRoute нет, то удаляем лишние классы, которые необходимы только для лайаута
@@ -351,14 +369,16 @@ export class Router {
         }
     }
 
+    // Функция проверяет, на каком роуте мы находимся и в лайауте у активной странице делает ссылку с классом active
+    // Показывая активную страницу
     activateMenuItem(route) {
         document.querySelectorAll('.sidebar .nav-link').forEach(item => {
-           const href = item.getAttribute('href');
-           if ((route.route.includes(href) && href !== '/') || (route.route === '/' && href === '/')) {
-               item.classList.add('active');
-           } else {
-               item.classList.remove('active');
-           }
+            const href = item.getAttribute('href');
+            if ((route.route.includes(href) && href !== '/') || (route.route === '/' && href === '/')) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
         })
     }
 }
