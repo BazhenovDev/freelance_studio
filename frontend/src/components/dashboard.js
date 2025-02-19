@@ -1,5 +1,5 @@
-import {HttpUtils} from "../utils/http-utils.js";
 import config from "../config/config.js";
+import {OrdersService} from "../services/orders-service";
 
 export class Dashboard {
 
@@ -10,17 +10,16 @@ export class Dashboard {
     }
 
     async getOrders() {
-        const result = await HttpUtils.request('/orders');
-        if (result.redirect) {
-            return this.openNewRoute(result.redirect);
+
+        const response = await OrdersService.getOrders();
+
+        if(response.error) {
+            alert(response.error);
+            return response.redirect ? this.openNewRoute(response.redirect) : null;
         }
 
-        if (result.error || !result.response || result.response && (result.response.error || !result.response.orders)) {
-            console.log(result.response.message)
-            return alert('Возникла ошибка при запросе заказов. Просим Вас попробовать позже или обратиться в поддержку!');
-        }
-        this.loadOrdersInfo(result.response.orders);
-        this.loadCalendarInfo(result.response.orders);
+        this.loadOrdersInfo(response.orders);
+        this.loadCalendarInfo(response.orders);
     }
 
     loadOrdersInfo(orders) {
@@ -37,15 +36,14 @@ export class Dashboard {
         for (let i = 0; i < orders.length; i++) {
 
             let color = null;
-            if(orders[i].status === config.orderStatuses.success) {
+            if (orders[i].status === config.orderStatuses.success) {
                 color = 'gray';
             }
 
             if (orders[i].scheduledDate) {
-                const scheduledDate = new Date(orders[i].scheduledDate);
-                preparedEvents.push(                {
+                preparedEvents.push({
                     title: `${orders[i].freelancer.name} ${orders[i].freelancer.lastName} выполняет заказ ${orders[i].number}`,
-                    start: scheduledDate,
+                    start: new Date(orders[i].scheduledDate),
                     backgroundColor: color ? color : '#00c0ef',
                     borderColor: color ? color : '#00c0ef',
                     allDay: true
@@ -53,10 +51,9 @@ export class Dashboard {
             }
 
             if (orders[i].deadlineDate) {
-                const deadlineDate = new Date(orders[i].deadlineDate);
-                preparedEvents.push(                {
+                preparedEvents.push({
                     title: `Дедлайн заказа ${orders[i].number}`,
-                    start: deadlineDate,
+                    start: new Date(orders[i].deadlineDate),
                     backgroundColor: color ? color : '#f39c12',
                     borderColor: color ? color : '#f39c12',
                     allDay: true
@@ -64,10 +61,9 @@ export class Dashboard {
             }
 
             if (orders[i].completeDate) {
-                const completeDate = new Date(orders[i].completeDate);
-                preparedEvents.push(                {
+                preparedEvents.push({
                     title: `Заказ ${orders[i].number} выполнен фрилансером ${orders[i].freelancer.name}`,
-                    start: completeDate,
+                    start: new Date(orders[i].completeDate),
                     backgroundColor: color ? color : '#00a65a',
                     borderColor: color ? color : '#00a65a',
                     allDay: true
@@ -75,8 +71,7 @@ export class Dashboard {
             }
         }
 
-        const calendarElement = document.getElementById('calendar');
-        const calendar = new FullCalendar.Calendar(calendarElement, {
+        (new FullCalendar.Calendar(document.getElementById('calendar'), {
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -86,7 +81,6 @@ export class Dashboard {
             locale: 'ru',
             themeSystem: 'bootstrap',
             events: preparedEvents
-        });
-        calendar.render();
+        })).render();
     }
 }

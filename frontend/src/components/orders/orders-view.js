@@ -1,13 +1,13 @@
-import {HttpUtils} from "../../utils/http-utils.js";
 import config from "../../config/config.js";
 import {CommonUtils} from "../../utils/common-utils.js";
+import {UrlUtils} from "../../utils/url-utils.js";
+import {OrdersService} from "../../services/orders-service";
 
 export class OrdersView {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
+        const id = UrlUtils.getUrlParam('id');
         if (!id) {
             return this.openNewRoute('/');
         }
@@ -19,17 +19,14 @@ export class OrdersView {
     }
 
     async getOrder(id) {
-        const result = await HttpUtils.request('/orders/' + id);
-        if (result.redirect) {
-            this.openNewRoute(result.redirect);
+        const response = await OrdersService.getOrder(id);
+
+        if(response.error) {
+            alert(response.error);
+            return response.redirect ? this.openNewRoute(response.redirect) : null;
         }
 
-        if (result.error || !result.response || (result.response && result.response.error)) {
-            console.log(result.response.message);
-            return alert('Не получилось загрузить заказ. Попробуйте позже или обратитесь в поддержку.')
-        }
-
-        this.showOrder(result.response)
+        this.showOrder(response.order)
     }
 
     showOrder(order) {

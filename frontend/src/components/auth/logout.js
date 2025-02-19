@@ -1,5 +1,5 @@
 import {AuthUtils} from "../../utils/auth-utils.js";
-import {HttpUtils} from "../../utils/http-utils.js";
+import {AuthService} from "../../services/auth-service";
 
 export class LogOut {
     constructor(openNewRoute) {
@@ -16,10 +16,9 @@ export class LogOut {
 
     async logout() {
         //Отправляем запрос на бэкенд, чтобы разлогинить
-        const result = await HttpUtils.request('/logout', 'POST', false,{
+        await AuthService.logout({
             refreshToken: AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey)
         });
-        console.log(result.response.message);
 
         //Удаляем данные из локального хранилища
         AuthUtils.removeAuthInfo()

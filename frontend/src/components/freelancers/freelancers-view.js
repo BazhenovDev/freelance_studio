@@ -1,17 +1,16 @@
-import {HttpUtils} from "../../utils/http-utils.js";
 import config from "../../config/config.js";
 import {CommonUtils} from "../../utils/common-utils.js";
+import {UrlUtils} from "../../utils/url-utils.js";
+import {FreelancerService} from "../../services/freelancer-service";
 
 export class FreelancersView {
 
     pageTitle = null;
     constructor(openNewRoute) {
-        this.pageTitle = document.getElementById('title');
-        this.createDateElement = document.getElementById('created');
-        this.updateDateElement = document.getElementById('update');
+        this.findElements();
         this.openNewRoute = openNewRoute
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
+
+        const id = UrlUtils.getUrlParam('id');
         if (!id) {
             return this.openNewRoute('/');
         }
@@ -22,17 +21,20 @@ export class FreelancersView {
         this.getFreelancer(id).then();
     }
 
-    async getFreelancer(id) {
-        const result = await HttpUtils.request('/freelancers/' + id);
-        if (result.redirect) {
-            return this.openNewRoute(result.redirect);
-        }
+    findElements() {
+        this.pageTitle = document.getElementById('title');
+        this.createDateElement = document.getElementById('created');
+        this.updateDateElement = document.getElementById('update');
+    }
 
-        if (result.error || !result.response || (result.response && result.response.error)) {
-            console.log(result.response.message)
-            return alert(`Возникла ошибка при запросе фрилансера. Просим Вас попробовать позже или обратиться в поддержку!`);
+    async getFreelancer(id) {
+        const response = await FreelancerService.getFreelancer(id);
+
+        if(response.error) {
+            alert(response.error);
+            return response.redirect ? this.openNewRoute(response.redirect) : null;
         }
-        this.showFreelancer(result.response);
+        this.showFreelancer(response.freelancer);
     }
 
     showFreelancer(freelancer) {

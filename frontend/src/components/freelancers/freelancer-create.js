@@ -1,5 +1,6 @@
-import {HttpUtils} from "../../utils/http-utils.js";
 import {FileUtils} from "../../utils/file-utils.js";
+import {ValidationUtils} from "../../utils/validation-utils.js";
+import {FreelancerService} from "../../services/freelancer-service";
 
 export class FreelancerCreate {
     constructor(openNewRoute) {
@@ -8,6 +9,21 @@ export class FreelancerCreate {
         document.getElementById('saveButton').addEventListener('click', this.saveFreelancer.bind(this));
         bsCustomFileInput.init();
 
+        this.findElements();
+
+        this.validations = [
+            {element: this.nameInputElement},
+            {element: this.lastNameInputElement},
+            {element: this.educationInputElement},
+            {element: this.locationInputElement},
+            {element: this.skillsInputElement},
+            {element: this.infoInputElement},
+            {element: this.emailInputElement, options: {pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/}},
+        ];
+
+    }
+
+    findElements() {
         this.nameInputElement = document.getElementById('nameInput');
         this.lastNameInputElement = document.getElementById('lastNameInput');
         this.emailInputElement = document.getElementById('emailInput');
@@ -19,37 +35,10 @@ export class FreelancerCreate {
         this.avatarInputElement = document.getElementById('avatarInput');
     }
 
-    validateForm() {
-        let isValid = true;
-
-        let textInputArray = [
-            this.nameInputElement, this.lastNameInputElement, this.educationInputElement, this.locationInputElement,
-            this.skillsInputElement, this.infoInputElement
-        ];
-
-        for (let i = 0; i < textInputArray.length; i++) {
-            if (textInputArray[i].value.length >= 2) {
-                textInputArray[i].classList.remove('is-invalid');
-            } else {
-                textInputArray[i].classList.add('is-invalid');
-                isValid = false;
-            }
-        }
-
-        if (this.emailInputElement.value && this.emailInputElement.value.match(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
-            this.emailInputElement.classList.remove('is-invalid');
-        } else {
-            this.emailInputElement.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        return isValid;
-    }
-
     async saveFreelancer(e) {
         e.preventDefault();
 
-        if(this.validateForm()) {
+        if(ValidationUtils.validateForm(this.validations)) {
             const createData = {
                 name: this.nameInputElement.value,
                 lastName: this.lastNameInputElement.value,
@@ -65,17 +54,14 @@ export class FreelancerCreate {
                 createData.avatarBase64 = await FileUtils.convertFileToBase64(this.avatarInputElement.files[0]);
             }
 
-           const result = await HttpUtils.request('/freelancers', "POST", true, createData);
-           if (result.redirect) {
-                return this.openNewRoute(result.redirect)
-           }
+            const response = await FreelancerService.createFreelancer(createData);
 
-            if(result.error || !result.response || (result.response && result.response.error)) {
-                console.log(result.response.message)
-                return alert(`Ошибка: ${result.response.message}`)
+            if(response.error) {
+                alert(response.error);
+                return response.redirect ? this.openNewRoute(response.redirect) : null;
             }
 
-            return this.openNewRoute(`/freelancers/view?id=${result.response.id}`);
+            return this.openNewRoute(`/freelancers/view?id=${response.id}`);
 
         }
 

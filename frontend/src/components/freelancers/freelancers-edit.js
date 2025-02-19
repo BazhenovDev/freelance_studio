@@ -1,12 +1,38 @@
-import {HttpUtils} from "../../utils/http-utils.js";
 import config from "../../config/config.js";
 import {CommonUtils} from "../../utils/common-utils.js";
-import {FileUtils} from "../../utils/file-utils";
+import {FileUtils} from "../../utils/file-utils.js";
+import {ValidationUtils} from "../../utils/validation-utils.js";
+import {UrlUtils} from "../../utils/url-utils.js";
+import {FreelancerService} from "../../services/freelancer-service";
 
 export class FreelancersEdit {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
 
+        const id = UrlUtils.getUrlParam('id');
+        if (!id) {
+            return this.openNewRoute('/');
+        }
+
+        document.getElementById('updateButton').addEventListener('click', this.updateFreelancer.bind(this));
+        bsCustomFileInput.init();
+
+        this.findElements();
+
+        this.validations = [
+            {element: this.nameInputElement},
+            {element: this.lastNameInputElement},
+            {element: this.educationInputElement},
+            {element: this.locationInputElement},
+            {element: this.skillsInputElement},
+            {element: this.infoInputElement},
+            {element: this.emailInputElement, options: {pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/}},
+        ];
+
+        this.getFreelancer(id).then();
+    }
+
+    findElements() {
         this.nameInputElement = document.getElementById('nameInput');
         this.lastNameInputElement = document.getElementById('lastNameInput');
         this.emailInputElement = document.getElementById('emailInput');
@@ -16,30 +42,17 @@ export class FreelancersEdit {
         this.infoInputElement = document.getElementById('infoInput');
         this.levelSelectElement = document.getElementById('levelSelect');
         this.avatarInputElement = document.getElementById('avatarInput');
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-        if (!id) {
-            return this.openNewRoute('/');
-        }
-        document.getElementById('updateButton').addEventListener('click', this.updateFreelancer.bind(this));
-        bsCustomFileInput.init();
-        this.getFreelancer(id).then();
     }
 
     async getFreelancer(id) {
-        const result = await HttpUtils.request(`/freelancers/${id}`);
-        if (result.redirect) {
-            this.openNewRoute(result.redirect);
-        }
+        const response = await FreelancerService.getFreelancer(id);
 
-        if(result.error || !result.response || (result.response && result.response.error)) {
-            console.log(result.response.message);
-            return alert('Не получилось осуществить запрос. Обратитесь в службу поддержки или попробуйте позже.');
+        if(response.error) {
+            alert(response.error);
+            return response.redirect ? this.openNewRoute(response.redirect) : null;
         }
-
-        this.freelancerOriginalData = result.response;
-        this.showFreelancer(result.response)
+        this.freelancerOriginalData = response.freelancer;
+        this.showFreelancer(response.freelancer)
     }
 
     showFreelancer(freelancer) {
@@ -68,75 +81,47 @@ export class FreelancersEdit {
         }
     }
 
-    validateForm() {
-        let isValid = true;
-
-        let textInputArray = [
-            this.nameInputElement, this.lastNameInputElement, this.educationInputElement, this.locationInputElement,
-            this.skillsInputElement, this.infoInputElement
-        ];
-
-        for (let i = 0; i < textInputArray.length; i++) {
-            if (textInputArray[i].value.length >= 2) {
-                textInputArray[i].classList.remove('is-invalid');
-            } else {
-                textInputArray[i].classList.add('is-invalid');
-                isValid = false;
-            }
-        }
-
-        if (this.emailInputElement.value && this.emailInputElement.value.match(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
-            this.emailInputElement.classList.remove('is-invalid');
-        } else {
-            this.emailInputElement.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        return isValid;
-    }
 
     async updateFreelancer(e) {
         e.preventDefault();
 
-        if (this.validateForm()) {
-            const changedData ={}
-            if(this.nameInputElement.value !== this.freelancerOriginalData.name) {
+
+        if (ValidationUtils.validateForm(this.validations)) {
+            const changedData = {}
+            if (this.nameInputElement.value !== this.freelancerOriginalData.name) {
                 changedData.name = this.nameInputElement.value
             }
-            if(this.lastNameInputElement.value !== this.freelancerOriginalData.lastName) {
+            if (this.lastNameInputElement.value !== this.freelancerOriginalData.lastName) {
                 changedData.lastName = this.lastNameInputElement.value
             }
-            if(this.emailInputElement.value !== this.freelancerOriginalData.email) {
+            if (this.emailInputElement.value !== this.freelancerOriginalData.email) {
                 changedData.email = this.emailInputElement.value
             }
-            if(this.educationInputElement.value !== this.freelancerOriginalData.education) {
+            if (this.educationInputElement.value !== this.freelancerOriginalData.education) {
                 changedData.education = this.educationInputElement.value
             }
-            if(this.locationInputElement.value !== this.freelancerOriginalData.location) {
+            if (this.locationInputElement.value !== this.freelancerOriginalData.location) {
                 changedData.location = this.locationInputElement.value
             }
-            if(this.skillsInputElement.value !== this.freelancerOriginalData.skills) {
+            if (this.skillsInputElement.value !== this.freelancerOriginalData.skills) {
                 changedData.skills = this.skillsInputElement.value
             }
-            if(this.infoInputElement.value !== this.freelancerOriginalData.info) {
+            if (this.infoInputElement.value !== this.freelancerOriginalData.info) {
                 changedData.info = this.infoInputElement.value
             }
-            if(this.levelSelectElement.value !== this.freelancerOriginalData.level) {
+            if (this.levelSelectElement.value !== this.freelancerOriginalData.level) {
                 changedData.level = this.levelSelectElement.value
             }
-            if(this.avatarInputElement.files && this.avatarInputElement.files.length > 0) {
+            if (this.avatarInputElement.files && this.avatarInputElement.files.length > 0) {
                 changedData.avatarBase64 = await FileUtils.convertFileToBase64(this.avatarInputElement.files[0]);
             }
 
             if (Object.keys(changedData).length > 0) {
-                const result = await HttpUtils.request(`/freelancers/${this.freelancerOriginalData.id}`, "PUT", true, changedData);
-                if (result.redirect) {
-                    this.openNewRoute(result.redirect);
-                }
 
-                if(result.error || !result.response || (result.response && result.response.error)) {
-                    console.log(result.response.message)
-                    return alert('Ошибка запроса при редактирование. Просьба обратиться в поддержку или попробовать сделать повторный запрос позже.')
+                const response = await FreelancerService.updateFreelancer(this.freelancerOriginalData.id, changedData);
+                if(response.error) {
+                    alert(response.error);
+                    return response.redirect ? this.openNewRoute(response.redirect) : null;
                 }
 
                 return this.openNewRoute(`/freelancers/view?id=${this.freelancerOriginalData.id}`)

@@ -1,11 +1,11 @@
-import {HttpUtils} from "../../utils/http-utils.js";
+import {UrlUtils} from "../../utils/url-utils.js";
+import {OrdersService} from "../../services/orders-service.js";
 
 export class OrdersDelete {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute
 
-        const urlParam = new URLSearchParams(window.location.search);
-        const id = urlParam.get('id');
+        const id = UrlUtils.getUrlParam('id');
         if (!id) {
             this.openNewRoute('/');
         }
@@ -14,13 +14,10 @@ export class OrdersDelete {
     }
 
     async deleteOrder(id) {
-        const result = await HttpUtils.request(`/orders/${id}`, "DELETE", true);
-        if(result.redirect) {
-            return this.openNewRoute(result.redirect);
-        }
-        if (result.error || !result.response || (result.response && result.response.error)) {
-            console.log(result.response.message);
-            return alert(`Не удалось удалить заказ. Обратитесь в службу поддержки или попробуйте удалить ещё раз позже.`);
+        const response = await OrdersService.deleteOrder(id);
+        if(response.error) {
+            alert(response.error);
+            return response.redirect ? this.openNewRoute(response.redirect) : null;
         }
         return this.openNewRoute('/orders');
     }

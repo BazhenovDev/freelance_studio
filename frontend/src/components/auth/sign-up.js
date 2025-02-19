@@ -1,5 +1,6 @@
 import {AuthUtils} from "../../utils/auth-utils.js";
-import {HttpUtils} from "../../utils/http-utils.js";
+import {ValidationUtils} from "../../utils/validation-utils.js";
+import {AuthService} from "../../services/auth-service.js";
 
 export class SignUp {
     emailElement = null;
@@ -22,61 +23,16 @@ export class SignUp {
         this.agreeElement = document.getElementById('agree');
         this.commonErrorElement = document.getElementById('common-error');
 
+        this.validations = [
+            {element: this.nameElement},
+            {element: this.lastNameElement},
+            {element: this.emailElement, options: {pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/}},
+            {element: this.passwordElement, options: {pattern: /^(?=.*[a-zа-я])(?=.*[A-ZА-Я])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Zа-яА-Я0-9!@#$%^&*]{6,}$/}},
+            {element: this.passwordRepeatElement, options: {compareTo: this.passwordElement.value}},
+            {element: this.agreeElement, options: {checked: true}},
+        ]
+
         document.getElementById('process-button').addEventListener('click', this.signUp.bind(this));
-    }
-
-    //Функция валидации формы
-    validateForm() {
-        let isValid = true;
-
-        //Проверка имени на содержание не менее 2 символов
-        if (this.nameElement.value && this.nameElement.value.length >= 2) {
-            this.nameElement.classList.remove('is-invalid');
-        } else {
-            this.nameElement.classList.add('is-invalid');
-            isValid = false;
-        }
-        //Проверка фамилии на содержание не менее 2 символов
-        if (this.lastNameElement.value && this.lastNameElement.value.length >= 2) {
-            this.lastNameElement.classList.remove('is-invalid');
-        } else {
-            this.lastNameElement.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        //Проверка валидности е-мейла
-        if (this.emailElement.value && this.emailElement.value.match(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
-            this.emailElement.classList.remove('is-invalid');
-        } else {
-            this.emailElement.classList.add('is-invalid');
-            isValid = false;
-        }
-        //Проверка пароля, минимум 6 символов включающие в себя букву в верхнем и нижнем регистре, цифру и спецсимвол
-        if (this.passwordElement.value && this.passwordElement.value.match(/^(?=.*[a-zа-я])(?=.*[A-ZА-Я])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Zа-яА-Я0-9!@#$%^&*]{6,}$/)) {
-            this.passwordElement.classList.remove('is-invalid');
-        } else {
-            this.passwordElement.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        //Проверка повторяющегося пароля, чтобы совпадал с паролем
-        if (this.passwordRepeatElement.value && this.passwordRepeatElement.value === this.passwordElement.value) {
-            this.passwordRepeatElement.classList.remove('is-invalid');
-        } else {
-            this.passwordRepeatElement.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        //Проверка на нажатый чекбокс
-        if (this.agreeElement.checked) {
-            this.agreeElement.classList.remove('is-invalid')
-        } else {
-            this.agreeElement.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        //Возвращаем флаг, false - если минимум одно поле не прошло проверку, иначе true
-        return isValid;
     }
 
 
@@ -85,29 +41,34 @@ export class SignUp {
         //Убираем поле с ошибками, если оно есть
         this.commonErrorElement.style.display = 'none';
 
+        for (let i = 0; i < this.validations.length; i++) {
+            if (this.validations[i].element === this.passwordRepeatElement) {
+                this.validations[i].options.compareTo = this.passwordElement.value;
+            }
+        }
+
         //Проверяем, если флаг в функции validateForm true, то отправляем форму на сервер, если false, то ничего не делаем
-        if (this.validateForm()) {
-            const result = await HttpUtils.request('/signup', 'POST', false, {
+        if (ValidationUtils.validateForm(this.validations)) {
+
+            const signupResult = await AuthService.signUp({
                 name: this.nameElement.value,
                 lastName: this.lastNameElement.value,
                 email: this.emailElement.value,
                 password: this.passwordElement.value
             });
 
-            if (result.error || !result.response || (result.response && (!result.response.accessToken || !result.response.refreshToken || !result.response.id || !result.response.name))) {
-                if (result.response.message) {
-                    this.commonErrorElement.innerText = result.response.message;
-                }
-                this.commonErrorElement.style.display = 'block';
-                return;
+            if (signupResult) {
+                AuthUtils.setAuthInfo(signupResult.accessToken, signupResult.refreshToken, {
+                    id: signupResult.id,
+                    name: signupResult.name
+                });
+                return this.openNewRoute('/');
             }
 
-            AuthUtils.setAuthInfo(result.response.accessToken, result.response.refreshToken, {
-                id: result.response.id,
-                name: result.response.name
-            });
-
-            this.openNewRoute('/');
+            if (signupResult.message) {
+                this.commonErrorElement.innerText = signupResult.message;
+            }
+            this.commonErrorElement.style.display = 'block';
         }
     }
 }

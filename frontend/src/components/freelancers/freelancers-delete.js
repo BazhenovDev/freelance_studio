@@ -1,11 +1,11 @@
-import {HttpUtils} from "../../utils/http-utils";
+import {UrlUtils} from "../../utils/url-utils.js";
+import {FreelancerService} from "../../services/freelancer-service";
 
 export class FreelancersDelete {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute
 
-        const urlParam = new URLSearchParams(window.location.search);
-        const id = urlParam.get('id');
+        const id = UrlUtils.getUrlParam('id');
         if (!id) {
             this.openNewRoute('/');
         }
@@ -14,16 +14,13 @@ export class FreelancersDelete {
     }
 
     async deleteFreelancer(id) {
-        const result = await HttpUtils.request(`/freelancers/${id}`, "DELETE", true);
+        const response = await FreelancerService.deleteFreelancer(id);
 
-        if(result.redirect) {
-            return this.openNewRoute(result.redirect);
+        if(response.error) {
+            alert(response.error);
+            return response.redirect ? this.openNewRoute(response.redirect) : null;
         }
 
-        if (result.error || !result.response || (result.response && result.response.error)) {
-            console.log(result.response.message);
-            return alert(`Не удалось удалить фрилансера. Обратитесь в службу поддержки или попробуйте удалить ещё раз позже.`);
-        }
         return this.openNewRoute('/freelancers');
     }
 }
